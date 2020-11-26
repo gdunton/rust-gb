@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+
+<head>
+    <title>Gameboy (LR35902) OPCODES</title>
+    <script src="js/elm.js"></script>
+    <style type="text/css">
+        a:link {
+            text-decoration: none;
+            color: #2018A0;
+        }
+
+        a:visited {
+            text-decoration: none;
+            color: #2018A0;
+        }
+
+        a:active {
+            text-decoration: none;
+            color: #2018A0;
+        }
+
+        a:hover {
+            text-decoration: none;
+            color: #4030FF;
+        }
+
+        sub {
+            font-size: 8pt;
+        }
+
+        sup {
+            font-size: 8pt;
+        }
+
+        hr {
+            height: 1px;
+            color: black;
+        }
+        body {
+            max-width: 90%;
+            margin: auto;
+            font-family: monospace; 
+            background-color: #ebebebfb
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Gameboy CPU (LR35902) instruction set</h1>
+
+    <div id="elm"></div>
+    <script>
+        var app = Elm.Main.init({
+          node: document.getElementById('elm')
+        });
+    </script>
+
+    <br>
+    <table cellspacing="0" cellpadding="0" style="font-family: monospace; font-size: 9pt">
+        <tr>
+            <td style="background-color:#ff99cc">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;</td>
+            <td>Misc/control instructions</td>
+        </tr>
+        <tr>
+            <td style="background-color:#ffcc99">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;</td>
+            <td>Jumps/calls</td>
+        </tr>
+        <tr>
+            <td style="background-color:#ccccff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;</td>
+            <td>8bit load/store/move instructions</td>
+        </tr>
+        <tr>
+            <td style="background-color:#ccffcc">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;</td>
+            <td>16bit load/store/move instructions</td>
+        </tr>
+        <tr>
+            <td style="background-color:#ffff99">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;</td>
+            <td>8bit arithmetic/logical instructions</td>
+        </tr>
+        <tr>
+            <td style="background-color:#ffcccc">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;</td>
+            <td>16bit arithmetic/logical instructions</td>
+        </tr>
+        <tr>
+            <td style="background-color:#80ffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;</td>
+            <td>8bit rotations/shifts and bit instructions</td>
+        </tr>
+    </table>
+
+    <br>
+
+    <table cellspacing="0" cellpadding="0">
+        <tr style="font-family: monospace; font-size: 8pt" align="center">
+            <td align="right">&nbsp;<br>Length in bytes&nbsp;&rarr;<br>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td class="withborder" style="width: 7em" bgcolor="#ffffff">INS reg<br>2&nbsp;&nbsp;8<br>Z N H
+                C</td>
+            <td>&nbsp;</td>
+            <td align="left">&larr;&nbsp;Instruction mnemonic<br>&larr;&nbsp;Duration in cycles<br>&larr;&nbsp;Flags
+                affected</td>
+        </tr>
+    </table>
+
+    <p>
+        Duration of conditional calls and returns is different when action is taken or not. This is indicated
+        by two numbers separated by "/". The higher number (on the left side of "/") means duration of
+        instruction when action is taken, the lower number (on the right side of "/") means duration of
+        instruction when action is not taken.
+    </p>
+
+    <br>
+
+    Instruction <b>STOP</b> is only 1 byte long but due to a hardware bug the next instruction
+    is always skipped. Vendors instructed developers to always add a <B>NOP</B> after a stop.
+    <br><br>
+    Flags affected are always shown in <b>Z H N C</b> order. If flag is marked by "<b>0</b>" it means it is
+    reset after the instruction. If it is marked by "<b>1</b>" it is set. If it is marked by "<b>-</b>" it
+    is not changed. If it is marked by "<b>Z</b>", "<b>N</b>", "<b>H</b>" or "<b>C</b>" corresponding flag
+    is affected as expected by its function.<br>
+    <br>
+
+    <span style="font-family: monospace"><b>d8&nbsp;</b></span> means immediate 8 bit data<br>
+    <span style="font-family: monospace"><b>d16</b></span> means immediate 16 bit data<br>
+    <span style="font-family: monospace"><b>a8&nbsp;</b></span> means 8 bit unsigned data, which are added
+    to $FF00 in certain instructions (replacement for missing <b>IN</b> and <b>OUT</b> instructions)<br>
+    <span style="font-family: monospace"><b>a16</b></span> means 16 bit address<br>
+    <span style="font-family: monospace"><b>r8&nbsp;</b></span> means 8 bit signed data, which are added to
+    program counter<br>
+    <br>
+    <b>LD A,(C)</b> has alternative mnemonic <b>LD A,($FF00+C)</b><br>
+    <b>LD C,(A)</b> has alternative mnemonic <b>LD ($FF00+C),A</b><br>
+    <b>LDH A,(a8)</b> has alternative mnemonic <b>LD A,($FF00+a8)</b><br>
+    <b>LDH (a8),A</b> has alternative mnemonic <b>LD ($FF00+a8),A</b><br>
+    <b>LD A,(HL+)</b> has alternative mnemonic <b>LD A,(HLI)</b> or <b>LDI A,(HL)</b><br>
+    <b>LD (HL+),A</b> has alternative mnemonic <b>LD (HLI),A</b> or <b>LDI (HL),A</b><br>
+    <b>LD A,(HL-)</b> has alternative mnemonic <b>LD A,(HLD)</b> or <b>LDD A,(HL)</b><br>
+    <b>LD (HL-),A</b> has alternative mnemonic <b>LD (HLD),A</b> or <b>LDD (HL),A</b><br>
+    <b>LD HL,SP+r8</b> has alternative mnemonic <b>LDHL SP,r8</b>
+
+    <br><br>
+    <span style="font-size: 150%"><b>Registers</b></span>
+    <br><br>
+    <table>
+        <tr>
+            <td>
+                <table cellspacing="0" cellpadding="0" class="withborder" bgcolor="#efefef" width="300">
+                    <tr align="center" bgcolor="#bfbfbf">
+                        <td class="withborder" width="150">15&nbsp;&nbsp;.&nbsp;.&nbsp;.&nbsp;&nbsp;8</td>
+                        <td class="withborder width=" 150"">7&nbsp;&nbsp;.&nbsp;.&nbsp;.&nbsp;&nbsp;0</td>
+                    </tr>
+                    <tr align="center">
+                        <td class="withborder">A (accumulator)</td>
+                        <td class="withborder">F (flags)</td>
+                    </tr>
+                    <tr align="center">
+                        <td class="withborder">B</td>
+                        <td class="withborder">C</td>
+                    </tr>
+                    <tr align="center">
+                        <td class="withborder">D</td>
+                        <td class="withborder">E</td>
+                    </tr>
+                    <tr align="center">
+                        <td class="withborder">H</td>
+                        <td class="withborder">L</td>
+                    </tr>
+                </table>
+                <br>
+                <table cellspacing="0" cellpadding="0" class="withborder" bgcolor="#efefef" width="300">
+                    <tr align="center" bgcolor="#bfbfbf">
+                        <td class="withborder" width="300">15&nbsp;&nbsp;.&nbsp;.&nbsp;.&nbsp;&nbsp;0</td>
+                    </tr>
+                    <tr align="center">
+                        <td class="withborder" width="400">SP (stack pointer)</td>
+                    </tr>
+                    <tr align="center">
+                        <td class="withborder">PC (program counter)</td>
+                    </tr>
+                </table>
+            </td>
+
+            <td width="50">&nbsp;</td>
+
+            <td>
+                <b>Flag register (F) bits:</b><br><br>
+                <table cellspacing="0" cellpadding="0" class="withborder" bgcolor="#efefef">
+                    <tr align="center" bgcolor="#bfbfbf">
+                        <td class="withborder" width="25">7</td>
+                        <td class="withborder" width="25">6</td>
+                        <td class="withborder" width="25">5</td>
+                        <td class="withborder" width="25">4</td>
+                        <td class="withborder" width="25">3</td>
+                        <td class="withborder" width="25">2</td>
+                        <td class="withborder" width="25">1</td>
+                        <td class="withborder" width="25">0</td>
+                    </tr>
+                    <tr align="center">
+                        <td class="withborder">Z</td>
+                        <td class="withborder">N</td>
+                        <td class="withborder">H</td>
+                        <td class="withborder">C</td>
+                        <td class="withborder">0</td>
+                        <td class="withborder">0</td>
+                        <td class="withborder">0</td>
+                        <td class="withborder">0</td>
+                    </tr>
+                </table>
+                <br>
+                <b>Z</b></span> - Zero Flag<br>
+                <b>N</b></span> - Subtract Flag<br>
+                <b>H</b></span> - Half Carry Flag<br>
+                <b>C</b></span> - Carry Flag<br>
+                <b>0</b></span> - Not used, always zero<br>
+            </td>
+        </tr>
+    </table>
+
+    <p>This table has come from <a href="http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html">here</a>.
+        Fixes:
+        <ul>
+            <li>LD (C), A is only 1 byte long</li>
+            <li>Prefix CB instructions are only 1 byte long</li>
+            <li>Changed wording for <B>STOP</B></li>
+            <li>Changed STOP to only be 1 byte big</li>
+        </ul>
+
+    </p>
+</body>
+
+<!-- I've only written some of the horrible html for thie page. Please don't judge me too harshly because of it -->
+
+</html>
